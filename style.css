@@ -1,0 +1,46 @@
+/* styles */
+/* called by your view template */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "Benton Sans", "Helvetica Neue", helvetica, arial, sans-serif;
+  margin: 0;
+  padding:0;
+  background:rgb(76,0,153);
+  width:100vw;
+  height:100vh;
+  overflow:hidden;
+}
+
+canvas{
+  width:100vw !important;
+  height:auto !important;
+  position:absolute;
+  margin:auto;
+  top:0;left:0;right:0;bottom:0;
+}
+
+.loader{
+  width:0%;
+  height:3px;
+  position:fixed;
+  top:0;
+  left:0;
+  background:rgb(118, 0, 245);
+  opacity:1;
+  z-index:1;
+}
+.loader:before{
+  content:'';
+  width:100vw;
+  height:3px;
+  position:absolute;
+  top:0;
+  left:0;
+  background:white;
+  opacity:0.1
+}
+
