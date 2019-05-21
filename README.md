@@ -5,5 +5,5 @@ An interactive type projection that utilizes simple body tracking from [Posenet]
 and Reynolds' famouse Flocking algorithm made accessible by the Coding Train's [Example](https://thecodingtrain.com/CodingChallenges/124-flocking-boids.html). 
 
 Use your hands to distort the type. Walk away from the camera and watch the type disappear. 
-Try it out [here](https://pose.yee.gd) or remix the code [here](https://glitch.com/edit/#!/pose).
+Try it out [here](https://pose.yee.gd) or remix the code [on Glitch](https://glitch.com/edit/#!/pose).
 
