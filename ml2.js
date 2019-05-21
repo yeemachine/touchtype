@@ -1,28 +1,27 @@
 //Uses PoseNet
 
-let poseNet,lerpPoses = [];
+let poseNet,imageElement
+let lerpPoses = [];
 let options = { 
- imageScaleFactor: 0.3,
+ imageScaleFactor: 0.5,
  outputStride: 16,
  flipHorizontal: true,
  minPoseConfidence: 0.7,
  maxPoseDetections: 5,
- scoreThreshold: 0.5,
- nmsRadius: 30,
- detectionType: 'single',
- multiplier: 0.75,
+ nmsRadius: 20
 }
 
 const poseNetRun = () => {
-  let imageElement = document.querySelector('video');
-  if (imageElement){
-    
-   poseNet.estimateMultiplePoses(imageElement, 0.5, options.flipHorizontal, options.outputStride, options.maxPoseDetections, options.scoreThreshold, options.nmsRadius)
+  if(imageElement){
+    poseNet.estimateMultiplePoses(imageElement, 0.5, options.flipHorizontal, options.outputStride, options.maxPoseDetections, options.minPoseConfidence, options.nmsRadius)
     .then(function(poses){ 
     poseCapture(poses)
   }) 
+    window.requestAnimationFrame(poseNetRun);
+  }else{
+    window.requestAnimationFrame(poseNetRun);
   }
-  window.requestAnimationFrame(poseNetRun);
+
 }
 
 const poseCapture = poses => {
@@ -54,6 +53,7 @@ const poseCapture = poses => {
         }
       }else{
       }
+      
     } 
   }else{
     lerpPoses = []
@@ -85,10 +85,11 @@ const poseRender = () => {
           let keypoints = e.keypoints
           let figure = new Figure(keypoints)
           tint(150, 150, 150)
-          image(handR, keypoints[9].position.x,keypoints[9].position.y,16,16);
-          image(handL, keypoints[10].position.x,keypoints[10].position.y,16,16);
-          // figure.allPoints()
-          // figure.allLines()
+          figure.allPoints()
+          figure.allLines()
+          image(handR, keypoints[9].position.x - handR.width/2,keypoints[9].position.y - handR.height/2,16,16);
+          image(handL, keypoints[10].position.x - handL.width/2,keypoints[10].position.y - handL.height/2,16,16);
+        
         }
       }
     }

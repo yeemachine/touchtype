@@ -3,6 +3,7 @@
 let font, video, handL, handR;
 
 function videoLoaded(){
+  imageElement = document.querySelector('video');
 }
 
 function preload(){
@@ -13,14 +14,14 @@ function preload(){
 
 function setup() {
   video = createCapture(VIDEO,videoLoaded);
-  video.size(640,480)
+  video.size(640,640,WEBGL)
   video.hide();
   video.class('stream')
   createCanvas(video.width,video.height);
   background(76,0,153);
   posenet.load().then(function(model){
     poseNet = model
-    poseNetRun()
+    poseNetRun();
   })
   flock = new Flock(250,['happy', "mother's",'day',':)'])
 }
