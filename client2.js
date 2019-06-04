@@ -19,17 +19,27 @@ function setup() {
   video.class('stream')
   createCanvas(video.width,video.height);
   background(76,0,153);
-  posenet.load().then(function(model){
-    poseNet = model
-    poseNetRun();
-  })
+  
+  // let modelOptions = {
+  //   architecture: 'ResNet50',
+  //   outputStride: 32,
+  //   inputResolution: 257
+  // }
+  // posenet.load(modelOptions).then(function(model){
+  //   poseNet = model
+  //   poseNetRun();
+  // })
+  // bodyPix.load().then(function(model){
+  //   bodyNet = model
+  //   bodyNetRun();
+  // })
   flock = new Flock(250,['happy', "mother's",'day',':)'])
 }
 
 function draw() {
   background(76,0,153);
-  // image(video, 0, 0,video.width,video.height);
-  poseRender();
+  // image(bodyNetImage, 0, 0,640,640);
+  // poseRender();
   flock.run()
 }
 
