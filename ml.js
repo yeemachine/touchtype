@@ -1,6 +1,6 @@
 //Uses ML5
 
-let poseNet,lerpPoses = [];
+let poseNet,bodyNet,lerpPoses = [];
 let options = { 
  imageScaleFactor: 0.3,
  outputStride: 16,
@@ -9,7 +9,7 @@ let options = {
  maxPoseDetections: 5,
  scoreThreshold: 0.5,
  nmsRadius: 20,
- detectionType: 'single',
+ detectionType: 'multiple',
  multiplier: 0.75,
 }
 
@@ -65,19 +65,17 @@ const poseRender = () => {
         flock.portals.push(createVector(rightWrist.position.x,rightWrist.position.y))
       }   
     }
-    
     for(let e of lerpPoses){
       if(e !== undefined){
-        if (e.pose.score > 0.25){
+        if (e.pose.score > 0){
           let activePoints = []
           let keypoints = e.pose.keypoints
-          let d = dist(keypoints[0].position.x,keypoints[0].position.y,keypoints[1].position.x,keypoints[1].position.y);
           let figure = new Figure(keypoints)
           tint(150, 150, 150)
-          image(handR, keypoints[9].position.x,keypoints[9].position.y,16,16);
-          image(handL, keypoints[10].position.x,keypoints[10].position.y,16,16);
-          // figure.allPoints()
-          // figure.allLines()
+          figure.allPoints()
+          figure.allLines()
+          image(handR, keypoints[9].position.x - handR.width/2,keypoints[9].position.y - handR.height/2,16,16);
+          image(handL, keypoints[10].position.x - handL.width/2,keypoints[10].position.y - handL.height/2,16,16);
         }
       }
     }
@@ -85,7 +83,6 @@ const poseRender = () => {
     flock.assemble = false
   }
 }
-
 class Figure {
   constructor(keypoints) {
     this.points = keypoints
@@ -148,4 +145,3 @@ class Figure {
     line(this.points[14].position.x, this.points[14].position.y, this.points[16].position.x, this.points[16].position.y);
   }
 }
-

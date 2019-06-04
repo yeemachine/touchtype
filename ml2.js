@@ -1,19 +1,19 @@
 //Uses PoseNet
 
-let poseNet,imageElement
+let poseNet,bodyNet,bodyNetImage,imageElement
 let lerpPoses = [];
 let options = { 
- imageScaleFactor: 0.5,
- outputStride: 16,
- flipHorizontal: true,
- minPoseConfidence: 0.7,
- maxPoseDetections: 5,
- nmsRadius: 20
+  flipHorizontal: false,
+  decodingMethod: 'multi-person',
+  maxPoseDetections: 5,
+  scoreThreshold: 0.5,
+  nmsRadius: 20
 }
 
 const poseNetRun = () => {
   if(imageElement){
-    poseNet.estimateMultiplePoses(imageElement, 0.5, options.flipHorizontal, options.outputStride, options.maxPoseDetections, options.minPoseConfidence, options.nmsRadius)
+    console.log(poseNet)
+    poseNet.estimatePoses(imageElement, options)
     .then(function(poses){ 
     poseCapture(poses)
   }) 
@@ -23,6 +23,30 @@ const poseNetRun = () => {
   }
 
 }
+
+// const Uint8ToBase64 = u8Arr => {
+//   var CHUNK_SIZE = 0x8000; //arbitrary number
+//   var index = 0;
+//   var length = u8Arr.length;
+//   var result = '';
+//   var slice;
+//   while (index < length) {
+//     slice = u8Arr.subarray(index, Math.min(index + CHUNK_SIZE, length)); 
+//     result += String.fromCharCode.apply(null, slice);
+//     index += CHUNK_SIZE;
+//   }
+//   return btoa(result);
+// }
+
+// async function bodyNetRun(){
+//     let outputStride = 16,
+//         segmentationThreshold = 0.6,
+//         maskBackground = false;
+//     if(imageElement){
+//     const personSegmentation = await bodyNet.estimatePartSegmentation(imageElement, outputStride, segmentationThreshold);
+//     }
+//     requestAnimationFrame(bodyNetRun);
+// }
 
 const poseCapture = poses => {
   if(poses.length > 0){
