@@ -1,6 +1,6 @@
 //Uses ML5
 
-let poseNet,bodyNet,lerpPoses = [];
+let lerpPoses = [];
 let options = { 
  imageScaleFactor: 0.3,
  outputStride: 16,
@@ -13,7 +13,21 @@ let options = {
  multiplier: 0.75,
 }
 
-const poseCapture = poses => {
+const yoloStart = () => {
+  yolo.detect(function(err, results) {
+  if(err){
+    
+  }else{
+      console.log(results);
+  }
+  setTimeout(function(){ yoloStart() }, 3000);
+  });
+}
+
+const poseCapture = (poses,canvas) => {
+  if(document.querySelector('.play').classList.contains('disabled')){
+    document.querySelector('.play').classList.remove('disabled')
+  }
   if(poses.length > 0){
     if(poses.length < lerpPoses.length){
       lerpPoses = lerpPoses.slice(poses.length)
@@ -32,8 +46,8 @@ const poseCapture = poses => {
               f.position.x = e.pose.keypoints[j].position.x
               f.position.y = e.pose.keypoints[j].position.y
             }else{
-              f.position.x = lerp(f.position.x,e.pose.keypoints[j].position.x,0.5)
-              f.position.y = lerp(f.position.y,e.pose.keypoints[j].position.y,0.5)
+              f.position.x = canvas.lerp(f.position.x,e.pose.keypoints[j].position.x,0.5)
+              f.position.y = canvas.lerp(f.position.y,e.pose.keypoints[j].position.y,0.5)
               f.position.dx = xDif
               f.position.dy = yDif
             }
@@ -48,100 +62,112 @@ const poseCapture = poses => {
   }
 }
 
-const poseRender = () => {
-  if(lerpPoses.length > 0){
+const poseRender = (canvas) => {
+  if(lerpPoses.length > 0 && play === true){
     if(!flock.textChange){
       flock.assemble = true
     }
     
     flock.portals = []
     if(lerpPoses[0]){
-      let leftWrist = lerpPoses[0].pose.keypoints[10]
-      let rightWrist = lerpPoses[0].pose.keypoints[9]
-      if(leftWrist.score > 0.01){
-        flock.portals.push(createVector(leftWrist.position.x,leftWrist.position.y))
-      }
-      if(rightWrist.score > 0.01){
-        flock.portals.push(createVector(rightWrist.position.x,rightWrist.position.y))
-      }   
+      let keypoints = lerpPoses[0].pose.keypoints
+      if (isMobile){
+        let nose = keypoints[0]
+        flock.portals.push(canvas.createVector(nose.position.x,nose.position.y))
+        canvas.ellipse(nose.position.x,nose.position.y,16,16)
+      }else{
+        let leftWrist = keypoints[10]
+        let rightWrist = keypoints[9]
+        flock.portals.push(canvas.createVector(leftWrist.position.x,leftWrist.position.y))
+        flock.portals.push(canvas.createVector(rightWrist.position.x,rightWrist.position.y))
+        canvas.image(handR, keypoints[9].position.x - handR.width/2,keypoints[9].position.y - handR.height/2,16,16);
+        canvas.image(handL, keypoints[10].position.x - handL.width/2,keypoints[10].position.y - handL.height/2,16,16);
+      } 
     }
-    for(let e of lerpPoses){
-      if(e !== undefined){
-        if (e.pose.score > 0){
-          let activePoints = []
-          let keypoints = e.pose.keypoints
-          let figure = new Figure(keypoints)
-          tint(150, 150, 150)
-          figure.allPoints()
-          figure.allLines()
-          image(handR, keypoints[9].position.x - handR.width/2,keypoints[9].position.y - handR.height/2,16,16);
-          image(handL, keypoints[10].position.x - handL.width/2,keypoints[10].position.y - handL.height/2,16,16);
-        }
-      }
-    }
+    
+    // for(let e of lerpPoses){
+    //   if(e !== undefined && e.pose.score > 0){
+    //     let activePoints = []
+    //     let keypoints = e.pose.keypoints
+    //     let figure = new Figure(keypoints,canvas)
+    //     // figure.allPoints()
+    //     // figure.head()
+    //     // figure.allLines()
+    //   }
+    // }
+    
   }else{
     flock.assemble = false
   }
 }
+
 class Figure {
-  constructor(keypoints) {
+  constructor(keypoints,canvas) {
     this.points = keypoints
-    this.d = dist(keypoints[0].position.x,keypoints[0].position.y,keypoints[1].position.x,keypoints[1].position.y);
+    this.d = canvas.dist(keypoints[0].position.x,keypoints[0].position.y,keypoints[1].position.x,keypoints[1].position.y);
+    this.canvas = canvas
   }
   eyes(){
-    ellipse(this.points[1].position.x,this.points[1].position.y,this.d)
-    ellipse(this.points[2].position.x,this.points[2].position.y,this.d)
+      this.canvas.ellipse(this.points[1].position.x,this.points[1].position.y,this.d/2)
+      this.canvas.ellipse(this.points[2].position.x,this.points[2].position.y,this.d/2)
   };
   nose(){        
-    ellipse(this.points[0].position.x,this.points[0].position.y,this.d)
+    this.canvas.ellipse(this.points[0].position.x,this.points[0].position.y,this.d)
   };
   ears(){
-    ellipse(this.points[3].position.x,this.points[3].position.y,this.d)
-    ellipse(this.points[4].position.x,this.points[4].position.y,this.d)    
+    this.canvas.ellipse(this.points[3].position.x,this.points[3].position.y,this.d)
+    this.canvas.ellipse(this.points[4].position.x,this.points[4].position.y,this.d)    
   };
+  head(){
+    this.canvas.push()
+      this.canvas.fill(0,0,0,0)
+      this.canvas.stroke(118,0,245)
+      this.canvas.ellipse(this.points[0].position.x,this.points[0].position.y,this.d*3,this.d*4)
+    this.canvas.pop()
+  }
   allPoints(){
     for (let e of this.points){
-      ellipse(e.position.x,e.position.y,this.d)
+      this.canvas.ellipse(e.position.x,e.position.y,this.d)
     }
   } 
   allLines(){
-    stroke(118,0,245);
-    strokeWeight(this.d*.3)
-    line(this.points[5].position.x, this.points[5].position.y, this.points[6].position.x, this.points[6].position.y);
-    line(this.points[11].position.x, this.points[11].position.y, this.points[12].position.x, this.points[12].position.y);  
-    line(this.points[6].position.x, this.points[6].position.y, this.points[12].position.x, this.points[12].position.y);   
-    line(this.points[5].position.x, this.points[5].position.y, this.points[11].position.x, this.points[11].position.y);  
-    line(this.points[5].position.x, this.points[5].position.y, this.points[7].position.x, this.points[7].position.y);
-    line(this.points[7].position.x, this.points[7].position.y, this.points[9].position.x, this.points[9].position.y);
+    this.canvas.stroke(118,0,245);
+    this.canvas.strokeWeight(this.d*.3)
+    this.canvas.line(this.points[5].position.x, this.points[5].position.y, this.points[6].position.x, this.points[6].position.y);
+    this.canvas.line(this.points[11].position.x, this.points[11].position.y, this.points[12].position.x, this.points[12].position.y);  
+    this.canvas.line(this.points[6].position.x, this.points[6].position.y, this.points[12].position.x, this.points[12].position.y);   
+    this.canvas.line(this.points[5].position.x, this.points[5].position.y, this.points[11].position.x, this.points[11].position.y);  
+    this.canvas.line(this.points[5].position.x, this.points[5].position.y, this.points[7].position.x, this.points[7].position.y);
+    this.canvas.line(this.points[7].position.x, this.points[7].position.y, this.points[9].position.x, this.points[9].position.y);
     
-    line(this.points[6].position.x, this.points[6].position.y, this.points[8].position.x, this.points[8].position.y);
-    line(this.points[8].position.x, this.points[8].position.y, this.points[10].position.x, this.points[10].position.y);
+    this.canvas.line(this.points[6].position.x, this.points[6].position.y, this.points[8].position.x, this.points[8].position.y);
+    this.canvas.line(this.points[8].position.x, this.points[8].position.y, this.points[10].position.x, this.points[10].position.y);
     
-    line(this.points[11].position.x, this.points[11].position.y, this.points[13].position.x, this.points[13].position.y);
-    line(this.points[13].position.x, this.points[13].position.y, this.points[15].position.x, this.points[15].position.y);
-    line(this.points[12].position.x, this.points[12].position.y, this.points[14].position.x, this.points[14].position.y);
-    line(this.points[14].position.x, this.points[14].position.y, this.points[16].position.x, this.points[16].position.y);
+    this.canvas.line(this.points[11].position.x, this.points[11].position.y, this.points[13].position.x, this.points[13].position.y);
+    this.canvas.line(this.points[13].position.x, this.points[13].position.y, this.points[15].position.x, this.points[15].position.y);
+    this.canvas.line(this.points[12].position.x, this.points[12].position.y, this.points[14].position.x, this.points[14].position.y);
+    this.canvas.line(this.points[14].position.x, this.points[14].position.y, this.points[16].position.x, this.points[16].position.y);
   }
   torso(){
-    line(this.points[5].position.x, this.points[5].position.y, this.points[6].position.x, this.points[6].position.y);
-    line(this.points[11].position.x, this.points[11].position.y, this.points[12].position.x, this.points[12].position.y);  
-    line(this.points[6].position.x, this.points[6].position.y, this.points[12].position.x, this.points[12].position.y);   
-    line(this.points[5].position.x, this.points[5].position.y, this.points[11].position.x, this.points[11].position.y);  
+    this.canvas.line(this.points[5].position.x, this.points[5].position.y, this.points[6].position.x, this.points[6].position.y);
+    this.canvas.line(this.points[11].position.x, this.points[11].position.y, this.points[12].position.x, this.points[12].position.y);  
+    this.canvas.line(this.points[6].position.x, this.points[6].position.y, this.points[12].position.x, this.points[12].position.y);   
+    this.canvas.line(this.points[5].position.x, this.points[5].position.y, this.points[11].position.x, this.points[11].position.y);  
   }
   leftArm(){
-    line(this.points[5].position.x, this.points[5].position.y, this.points[7].position.x, this.points[7].position.y);
-    line(this.points[7].position.x, this.points[7].position.y, this.points[9].position.x, this.points[9].position.y);
+    this.canvas.line(this.points[5].position.x, this.points[5].position.y, this.points[7].position.x, this.points[7].position.y);
+    this.canvas.line(this.points[7].position.x, this.points[7].position.y, this.points[9].position.x, this.points[9].position.y);
   }
   rightArm(){
-    line(this.points[6].position.x, this.points[6].position.y, this.points[8].position.x, this.points[8].position.y);
-    line(this.points[8].position.x, this.points[8].position.y, this.points[10].position.x, this.points[10].position.y);
+    this.canvas.line(this.points[6].position.x, this.points[6].position.y, this.points[8].position.x, this.points[8].position.y);
+    this.canvas.line(this.points[8].position.x, this.points[8].position.y, this.points[10].position.x, this.points[10].position.y);
   }
   leftLeg(){
-    line(this.points[11].position.x, this.points[11].position.y, this.points[13].position.x, this.points[13].position.y);
-    line(this.points[13].position.x, this.points[13].position.y, this.points[15].position.x, this.points[15].position.y);
+    this.canvas.line(this.points[11].position.x, this.points[11].position.y, this.points[13].position.x, this.points[13].position.y);
+    this.canvas.line(this.points[13].position.x, this.points[13].position.y, this.points[15].position.x, this.points[15].position.y);
   }
   rightLeg(){
-    line(this.points[12].position.x, this.points[12].position.y, this.points[14].position.x, this.points[14].position.y);
-    line(this.points[14].position.x, this.points[14].position.y, this.points[16].position.x, this.points[16].position.y);
+    this.canvas.line(this.points[12].position.x, this.points[12].position.y, this.points[14].position.x, this.points[14].position.y);
+    this.canvas.line(this.points[14].position.x, this.points[14].position.y, this.points[16].position.x, this.points[16].position.y);
   }
 }
