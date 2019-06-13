@@ -197,7 +197,7 @@ video.horizontal{
 
 @media only screen and (max-width: 600px) {
   .material-icons, a{
-    color:white;
+/*     color:white; */
   }
  .card{
     height:70vw;
