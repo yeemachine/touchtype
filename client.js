@@ -48,7 +48,8 @@ const instance1 = function( p ) {
     poseNet = ml5.poseNet(video,options,modelLoaded)
     let sentence = "hello/welcome/greetings/bonjour/good day/howdy"
     let words = sentence.split("/");
-    flock = new Flock(180,words,p)
+    let maxBoids = (isMobile) ? 150 : 250
+    flock = new Flock(maxBoids,words,p)
   }
   p.draw = function() {
     p.background(76,0,153);
