@@ -3,39 +3,45 @@
 // https://youtu.be/mhjuuHl6qHM
 
 let flock, textPoints;
-let alignValue=0.2, 
+let alignValue=0.4, 
     cohesionValue=0.4, 
     separationValue=0.3;
+    fleeMag = (isMobile) ? 20 : 30
 
-const createTextPoints = (word) => {
-  textFont(font)
-  textSize(110)
-  let bbox = font.textBounds(word,0,0,110)
-  let textPoints = font.textToPoints(word, (width/2 - bbox.w/2), (height/2 + bbox.h/3.5), 110, {sampleFactor:0.09,simplifyThreshold:0});
+const createTextPoints = (word,canvas) => {
+  let fontSize = (canvas.windowWidth/10 > 80) ? 80
+                  : (canvas.windowWidth/10 < 60) ? 60
+                  : canvas.windowWidth/10
+  console.log(font)
+  canvas.textFont(font)
+  canvas.textSize(fontSize)
+  let bbox = font.textBounds(word,0,0,fontSize)
+  let textPoints = font.textToPoints(word, (canvas.width/2 - bbox.w/2), (canvas.height/2 + bbox.h/3.5), fontSize, {sampleFactor:0.09,simplifyThreshold:0});
   return textPoints
 }
 
 class Flock {
-  constructor(count,words) {
+  constructor(count,words,canvas) {
     this.words = words
     this.word = (words[0]) ? words[0] : 'hello'
     this.textChange = false;
     this.assemble = false;
     this.portals = []
-    this.textPoints = createTextPoints(this.word)
+    this.textPoints = createTextPoints(this.word,canvas)
     this.boids = (()=>{
       let arr = []
       for (let i=0; i<count; i++) {
-        arr.push(new Boid(i));
+        arr.push(new Boid(i,canvas));
       }
       return arr
     })()
     this.counter = 0
     this.iteration = 0
+    this.canvas = canvas
   }
   changeText(word) {
   this.word = word
-  this.textPoints = createTextPoints(this.word)
+  this.textPoints = createTextPoints(this.word,this.canvas)
   }
   arrived(){
   }
@@ -74,41 +80,42 @@ class Flock {
 
 
 class Boid {
-  constructor(id) {
+  constructor(id,canvas) {
     this.id = id;
     this.counter = 0;
-    this.position = createVector(random(width), random(height));
+    this.position = canvas.createVector(canvas.random(canvas.width), canvas.random(canvas.height));
     this.velocity = p5.Vector.random2D();
-    this.velocity.setMag(random(2, 4));
-    this.acceleration = createVector();
+    this.velocity.setMag(canvas.random(2, 4));
+    this.acceleration = canvas.createVector();
     
     this.maxForce = 0.05;
     this.maxSpeed = 3;
     this.target = null;
-    this.r = random(2, 4)
+    this.r = canvas.random(2, 4)
     this.assemble = false;
-    this.amt = 0
+    this.amt = 0;
+    this.canvas = canvas
   }
 
   edges() {
-    if (this.position.x > width) {
+    if (this.position.x > this.canvas.width) {
       this.position.x = 0;
     } else if (this.position.x <0) {
-      this.position.x = width;
+      this.position.x = this.canvas.width;
     }
-    if (this.position.y > height) {
+    if (this.position.y > this.canvas.height) {
       this.position.y = 0;
     } else if (this.position.y < 0) {
-      this.position.y = height;
+      this.position.y = this.canvas.height;
     }
   }
 
   align(boids) {
     let perceptionRadius = 25;
-    let steering = createVector();
+    let steering = this.canvas.createVector();
     let total = 0;
     for (let other of boids) {
-      let d = dist(this.position.x, this.position.y, other.position.x, other.position.y);
+      let d = this.canvas.dist(this.position.x, this.position.y, other.position.x, other.position.y);
       if (other != this && d < perceptionRadius) {
         steering.add(other.velocity);
         total++;
@@ -125,10 +132,10 @@ class Boid {
 
   separation(boids) {
     let perceptionRadius = 24;
-    let steering = createVector();
+    let steering = this.canvas.createVector();
     let total = 0;
     for (let other of boids) {
-      let d = dist(this.position.x, this.position.y, other.position.x, other.position.y);
+      let d = this.canvas.dist(this.position.x, this.position.y, other.position.x, other.position.y);
       if (other != this && d < perceptionRadius) {
         let diff = p5.Vector.sub(this.position, other.position);
         diff.div(d * d);
@@ -147,10 +154,10 @@ class Boid {
 
   cohesion(boids) {
     let perceptionRadius = 50;
-    let steering = createVector();
+    let steering = this.canvas.createVector();
     let total = 0;
     for (let other of boids) {
-      let d = dist(this.position.x, this.position.y, other.position.x, other.position.y);
+      let d = this.canvas.dist(this.position.x, this.position.y, other.position.x, other.position.y);
       if (other != this && d < perceptionRadius) {
         steering.add(other.position);
         total++;
@@ -172,7 +179,7 @@ class Boid {
         if (target){
           var desired = p5.Vector.sub(target, this.position);
           var d = desired.mag();
-          if (d < 50) {
+          if (d < fleeMag) {
             desired.setMag(this.maxSpeed);
             desired.mult(-1);
             var steer = p5.Vector.sub(desired, this.velocity);
@@ -199,12 +206,12 @@ class Boid {
   }
   
   arrive(point){
-    this.target = createVector(point.x,point.y);
+    this.target = this.canvas.createVector(point.x,point.y);
     let desired = p5.Vector.sub(this.target, this.position), d = desired.mag();
 
     
     // Scale with arbitrary damping within 100 pixels
-    desired.setMag(d < 100 ? map(d,0,100,0,this.maxSpeed) : this.maxSpeed);
+    desired.setMag(d < 100 ? this.canvas.map(d,0,100,0,this.maxSpeed) : this.maxSpeed);
     // desired.setMag(this.maxSpeed)
 
     // Steering = Desired minus Velocity
@@ -228,32 +235,32 @@ class Boid {
   }
 
   render() {
-    let theta = this.velocity.heading() + radians(90);
-    let from = color(118, 0, 245);
-    let to = color(150, 150, 150);
-    let fade = lerpColor(from, to, this.amt)
+    let theta = this.velocity.heading() + this.canvas.radians(90);
+    let from = this.canvas.color(118, 0, 245);
+    let to = this.canvas.color(255, 255, 255);
+    let fade = this.canvas.lerpColor(from, to, this.amt)
     if(this.assemble){
       if(this.amt<1){
         this.amt = this.amt + 0.005
       }  
-    fill(fade);  
+    this.canvas.fill(fade);  
     }else{
       if(this.amt>0){
         this.amt = this.amt - 0.005
       }
-    fill(fade);
+    this.canvas.fill(fade);
     }
-    noStroke();
-    push();
-    translate(this.position.x,this.position.y);
-    rotate(theta);
-    beginShape();
-    vertex(0, -this.r*1);
-    vertex(-this.r, this.r*(2-this.amt*2));
-    vertex(0, this.r);
-    vertex(this.r, this.r*(2-this.amt*2));
-    endShape(CLOSE);
-    pop(); 
+    this.canvas.noStroke();
+    this.canvas.push();
+    this.canvas.translate(this.position.x,this.position.y);
+    this.canvas.rotate(theta);
+    this.canvas.beginShape();
+    this.canvas.vertex(0, -this.r*1);
+    this.canvas.vertex(-this.r, this.r*(2-this.amt*2));
+    this.canvas.vertex(0, this.r);
+    this.canvas.vertex(this.r, this.r*(2-this.amt*2));
+    this.canvas.endShape(this.canvas.CLOSE);
+    this.canvas.pop(); 
   }
   
   run(boids){

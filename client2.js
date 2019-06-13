@@ -17,7 +17,8 @@ function setup() {
   video.size(640,640,WEBGL)
   video.hide();
   video.class('stream')
-  createCanvas(video.width,video.height);
+  
+  createCanvas(windowWidth,windowHeight);
   background(76,0,153);
   
   // let modelOptions = {
@@ -37,7 +38,7 @@ function setup() {
 }
 
 function draw() {
-  background(76,0,153);
+  // background(76,0,153);
   // image(bodyNetImage, 0, 0,640,640);
   // poseRender();
   flock.run()
