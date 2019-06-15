@@ -1,7 +1,8 @@
-//Uses ML5
+//-----Version that uses ML5 instead of Tensorflow------//
 
-let lerpPoses = [];
-let options = { 
+let lerpPoses = []; //Array for interpolated PoseNet points
+
+let options = { //PoseNet options
  imageScaleFactor: 0.3,
  outputStride: 16,
  flipHorizontal: true,
@@ -13,7 +14,9 @@ let options = {
  multiplier: 0.75,
 }
 
-const poseCapture = (poses,canvas) => {
+//---Smoothing points---//
+const poseCapture = (poses,canvas) => { 
+  //Locks play button until video loads
   if(document.querySelector('.play').classList.contains('disabled')){
     document.querySelector('.play').classList.remove('disabled')
   }
@@ -22,7 +25,6 @@ const poseCapture = (poses,canvas) => {
       lerpPoses = lerpPoses.slice(poses.length)
     }
     for (let [i,e] of poses.entries()){
-        // console.log('confident')
       if(e.pose.score > 0.25){
         if(lerpPoses[i] === undefined){
           lerpPoses[i] = e
@@ -51,13 +53,14 @@ const poseCapture = (poses,canvas) => {
   }
 }
 
+//---For Rendering---//
 const poseRender = (canvas) => {
   if(lerpPoses.length > 0 && play === true){
     if(!flock.textChange){
       flock.assemble = true
     }
-    
     flock.portals = []
+    //For performance, limit physics to the 1st pose
     if(lerpPoses[0]){
       let keypoints = lerpPoses[0].pose.keypoints
       if (isMobile){
@@ -72,24 +75,13 @@ const poseRender = (canvas) => {
         canvas.image(handR, keypoints[9].position.x - handR.width/2,keypoints[9].position.y - handR.height/2,16,16);
         canvas.image(handL, keypoints[10].position.x - handL.width/2,keypoints[10].position.y - handL.height/2,16,16);
       } 
-    }
-    
-    // for(let e of lerpPoses){
-    //   if(e !== undefined && e.pose.score > 0){
-    //     let activePoints = []
-    //     let keypoints = e.pose.keypoints
-    //     let figure = new Figure(keypoints,canvas)
-    //     // figure.allPoints()
-    //     // figure.head()
-    //     // figure.allLines()
-    //   }
-    // }
-    
+    }    
   }else{
     flock.assemble = false
   }
 }
 
+//---Class for pose skeleton---//
 class Figure {
   constructor(keypoints,canvas) {
     this.points = keypoints
@@ -160,15 +152,3 @@ class Figure {
     this.canvas.line(this.points[14].position.x, this.points[14].position.y, this.points[16].position.x, this.points[16].position.y);
   }
 }
-
-
-// const yoloStart = () => {
-//   yolo.detect(function(err, results) {
-//   if(err){
-    
-//   }else{
-//       console.log(results);
-//   }
-//   setTimeout(function(){ yoloStart() }, 3000);
-//   });
-// }

@@ -8,18 +8,20 @@ let alignValue=0.4,
     separationValue=0.3;
     fleeMag = (isMobile) ? 20 : 30
 
+//---Generate points from font text---//
 const createTextPoints = (word,canvas) => {
   let fontSize = (canvas.windowWidth/10 > 80) ? 80
                   : (canvas.windowWidth/10 < 60) ? 60
                   : canvas.windowWidth/10
-  console.log(font)
   canvas.textFont(font)
   canvas.textSize(fontSize)
   let bbox = font.textBounds(word,0,0,fontSize)
-  let textPoints = font.textToPoints(word, (canvas.width/2 - bbox.w/2), (canvas.height/2 + bbox.h/3.5), fontSize, {sampleFactor:0.09,simplifyThreshold:0});
+  let textOptions = {sampleFactor:0.09,simplifyThreshold:0}
+  let textPoints = font.textToPoints(word, (canvas.width/2 - bbox.w/2), (canvas.height/2 + bbox.h/3.5), fontSize, textOptions);
   return textPoints
 }
 
+//---Behavior for group of boids (simulated birds)---//
 class Flock {
   constructor(count,words,canvas) {
     this.words = words
@@ -78,7 +80,7 @@ class Flock {
   }
 }
 
-
+//---Behavior for each individual boid (simulated birds)---//
 class Boid {
   constructor(id,canvas) {
     this.id = id;
@@ -208,8 +210,7 @@ class Boid {
   arrive(point){
     this.target = this.canvas.createVector(point.x,point.y);
     let desired = p5.Vector.sub(this.target, this.position), d = desired.mag();
-
-    
+  
     // Scale with arbitrary damping within 100 pixels
     desired.setMag(d < 100 ? this.canvas.map(d,0,100,0,this.maxSpeed) : this.maxSpeed);
     // desired.setMag(this.maxSpeed)
@@ -222,12 +223,6 @@ class Boid {
   
   //update location
   update() {
-    if (this.assemble && this.target.dist(this.position) < 0.01) {
-      // this.velocity = p5.Vector.fromAngle(this.theta + radians(90));
-      // this.point = textPoints[this.id+this.counter]
-      // this.theta = p5.Vector.fromAngle(radians(this.point.alpha)).heading()+radians(90);
-      // this.target = createVector(this.point.x,this.point.y);
-    }
     this.position.add(this.velocity);
     this.velocity.add(this.acceleration);
     this.velocity.limit(this.maxSpeed);
