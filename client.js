@@ -62,6 +62,29 @@ const instance1 = function( p ) {
 };
 let mainP5 = new p5(instance1, 'mainP5');
 
+const instance2 = function( p ) { 
+  p.setup = function() {
+    p.createCanvas(videoW,videoH);
+    p.background(76,0,153);
+  }
+  p.draw = function() {
+    p.background(76,0,153);
+    if(!isMobile){
+      if(lerpPoses.length > 0 && play !== true){
+        for(let e of lerpPoses){
+          if(e !== undefined && e.pose.score > 0){
+            let activePoints = []
+            let keypoints = e.pose.keypoints
+            let figure = new Figure(keypoints,p)
+            figure.allLines()
+            figure.allPoints()
+          }
+        }
+      }
+    }
+  }
+};
+let subP5 = new p5(instance2, 'subP5');
 
 
 

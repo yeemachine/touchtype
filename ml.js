@@ -13,17 +13,6 @@ let options = {
  multiplier: 0.75,
 }
 
-const yoloStart = () => {
-  yolo.detect(function(err, results) {
-  if(err){
-    
-  }else{
-      console.log(results);
-  }
-  setTimeout(function(){ yoloStart() }, 3000);
-  });
-}
-
 const poseCapture = (poses,canvas) => {
   if(document.querySelector('.play').classList.contains('disabled')){
     document.querySelector('.play').classList.remove('disabled')
@@ -171,3 +160,15 @@ class Figure {
     this.canvas.line(this.points[14].position.x, this.points[14].position.y, this.points[16].position.x, this.points[16].position.y);
   }
 }
+
+
+// const yoloStart = () => {
+//   yolo.detect(function(err, results) {
+//   if(err){
+    
+//   }else{
+//       console.log(results);
+//   }
+//   setTimeout(function(){ yoloStart() }, 3000);
+//   });
+// }
