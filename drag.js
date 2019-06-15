@@ -1,3 +1,5 @@
+//-----Click and Drag/Swipe behavior for UI Cards------//
+
 document.querySelectorAll('.card').forEach(e=>{
   var object = e,
   initX, initY, firstX, firstY;
