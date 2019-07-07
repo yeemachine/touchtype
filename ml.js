@@ -108,6 +108,7 @@ class Figure {
   }
   allPoints(){
     for (let e of this.points){
+      this.canvas.fill(235, 58, 246)
       this.canvas.ellipse(e.position.x,e.position.y,this.d)
     }
   } 

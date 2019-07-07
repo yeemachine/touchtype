@@ -232,7 +232,7 @@ class Boid {
   render() {
     let theta = this.velocity.heading() + this.canvas.radians(90);
     let from = this.canvas.color(118, 0, 245);
-    let to = this.canvas.color(255, 255, 255);
+    let to = this.canvas.color(235, 58, 246);
     let fade = this.canvas.lerpColor(from, to, this.amt)
     if(this.assemble){
       if(this.amt<1){
