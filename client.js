@@ -26,7 +26,7 @@ const instance1 = function( p ) {
     //Loads PoseNet Model
     poseNet = ml5.poseNet(video,options,modelLoaded) 
     //Create new Flock of Boids (simulated birds)
-    let sentence = "hello/welcome/greetings/bonjour/good day/howdy"
+    let sentence = "fire/water/Ice/air"
     let words = sentence.split("/");
     let maxBoids = (isMobile) ? 150 : 250
     flock = new Flock(maxBoids,words,p)
